@@ -51,6 +51,7 @@ class TestFeatures(TestCase):
         data = [[0, 0], [0, 0], [1, 1], [1, 1]]
         expected = np.array([[-1., -1.], [-1., -1.], [1., 1.], [1., 1.]])
         scaler.fit(data)
+        result = scaler.transform(data)
         assert (result == expected).all(), "Scaler transform does not return expected values. Expect {}. Got: {}".format(expected.reshape(1,-1), result.reshape(1,-1))
         
     def test_standard_scaler_single_value(self):
@@ -62,6 +63,33 @@ class TestFeatures(TestCase):
         assert (result == expected).all(), "Scaler transform does not return expected values. Expect {}. Got: {}".format(expected.reshape(1,-1), result.reshape(1,-1))
 
     # TODO: Add a test of your own below this line
+    def test_min_max_scaler_with_zero_values(self):
+        data = [[1, 1], [3, 6], [6, 12]]
+        scaler = MinMaxScaler()
+        scaler.fit(data)
+        result = scaler.transform(data)
+        expected = np.array([[0., 0.], [0.5, 0.5], [1., 1.]])
+        assert np.isclose(result, expected).all(), "MinMaxScaler does not correctly scale data with zero values. Expected {}, Got {}".format(expected, result)
+
+
+    #This checks if the Standardscaler correctly handles negative values in the dataset
+    def test_standard_scaler_with_negative_values(self):
+        scaler = StandardScaler()
+        data = [[-3, -3], [-2, 2], [0, 0], [2, -2], [3, 3]]
+        scaler.fit(data)
+        transformed_data = scaler.transform(data)
     
+        expected_mean = [0, 0]  
+        expected_std = [1, 1]  
+
+        assert np.allclose(scaler.mean, expected_mean), "StandardScaler mean does not match expected mean {}. Got {}".format(expected_mean, scaler.mean)
+        assert np.allclose(scaler.std, expected_std), "StandardScaler standard deviation does not match expected std {}. Got {}".format(expected_std, scaler.std)
+        # Optionally, you can also check the transformed data
+        # Here, we check if the mean of the transformed data is approximately zero
+        assert np.allclose(np.mean(transformed_data, axis=0), 0), "Mean of transformed data is not zero"
+        # Here, we check if the standard deviation of the transformed data is approximately one
+        assert np.allclose(np.std(transformed_data, axis=0), 1), "Standard deviation of transformed data is not one"
+
+
 if __name__ == '__main__':
     unittest.main()
